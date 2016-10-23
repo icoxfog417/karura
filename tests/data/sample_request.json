@@ -1,0 +1,13 @@
+{
+  "app_id": 333,
+  "fields": {
+    "area": {"usage": 0},
+    "direction": {"usage": 0},
+    "house_price": {"usage": 1},
+    "name": {"usage": -1},
+    "person": {"usage": -1},
+    "stairs": {"usage": 0},
+    "walk_time": {"usage": 0},
+    "years_old": {"usage": 0}
+  }
+}
