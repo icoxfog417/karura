@@ -147,7 +147,7 @@ class FieldManager():
 
         return dataset
 
-    def format(self, record):
+    def format(self, code_value_dict):
         pass
 
     def to_dict(self):
