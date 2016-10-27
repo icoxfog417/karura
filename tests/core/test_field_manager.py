@@ -21,15 +21,27 @@ class TestFieldManager(unittest.TestCase):
         body = self._read_json()
         manager = FieldManager.read_definitions(body).init(env)
         self.assertTrue(manager)
-
+    
     def test_adjust(self):
         env = Environment()
         body = self._read_json()
         manager = FieldManager.read_definitions(body).init(env)
         dataset = DataSet.load_dataset(env, manager)
-        adjusted = manager.adjust(dataset)
 
-        self.assertTrue(adjusted)
+        # load
+        adjusted = manager.adjust(dataset)
+        self.assertEqual(dataset.data.shape, adjusted.data.shape)
+
+        # with category variable
+        manager.get_feature("direction").category_feature = True
+        adjusted = manager.adjust(dataset)
+        self.assertTrue(dataset.data.shape[1] < adjusted.data.shape[1])
+
+        # restore from serialized
+        serialized = json.dumps(manager.to_dict())
+        loaded_manager = FieldManager.load(serialized)
+        adjusted_from_loaded = loaded_manager.adjust(dataset)
+        self.assertEqual(adjusted.data.shape, adjusted_from_loaded.data.shape)
 
     def _read_json(self):
         req = {}

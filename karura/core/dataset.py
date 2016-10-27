@@ -25,7 +25,7 @@ class DataSet():
         fields = list(_feature_names) + [_target_name]
         app = pykintone.login(env.kintone_domain, env.kintone_id, env.kintone_password).app(_app_id)
 
-        result = app.select(query="limit 500", fields=fields)  # todo: select all records
+        result = app.select(query="limit 500", fields=fields)  # todo: get over 500 records
         if result.ok:
             data = []
             target = []

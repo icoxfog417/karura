@@ -132,5 +132,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+karura.pyproj
+karura.sln
+.vs/
+
 store/
 env.json

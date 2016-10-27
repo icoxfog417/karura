@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pykintone
 from karura.core.dataset import DataSet
@@ -5,14 +6,29 @@ from karura.core.dataset import DataSet
 
 class Field():
 
-    def __init__(self, field_code, field_type="", value_converter=0.0, value_mean=0, value_std=1):
+    def __init__(self, field_code, field_type="", value_converter=0.0, value_mean=0, value_std=1, category_feature=False):
         self.field_code = field_code
         self.field_type = field_type
         self.value_converter = value_converter
         self.value_mean = value_mean
         self.value_std = value_std
+        self.category_feature = category_feature
 
     def __call__(self, value):
+        if self.category_feature:
+            values = value if isinstance(value, (tuple, list)) else [value]
+            categories = sorted(self.value_converter, key=self.value_converter.get)
+            categorized = [0] * len(categories)
+            for i, c in enumerate(categories):
+                categorized[i] = 1 if c in values else 0
+            return categorized
+        else:
+            return self._to_feature(value)
+
+    def categorizable(self):
+        return True if len(self.value_converter) > 0 else False
+    
+    def _to_feature(self, value):
         v = value
         if isinstance(self.value_converter, dict):
             if value in self.value_converter:
@@ -31,17 +47,20 @@ class Field():
             "field_type": self.field_type,
             "value_converter": self.value_converter,
             "value_mean": self.value_mean,
-            "value_std": self.value_std
+            "value_std": self.value_std,
+            "category_feature": self.category_feature
         }
 
     @classmethod
     def load(cls, serialized):
+        _s = serialized if isinstance(serialized, dict) else json.loads(serialized)
         return Field(
-            serialized["field_code"],
-            serialized["field_type"],
-            serialized["value_converter"],
-            serialized["value_mean"],
-            serialized["value_std"]
+            _s["field_code"],
+            _s["field_type"],
+            _s["value_converter"],
+            _s["value_mean"],
+            _s["value_std"],
+            _s["category_feature"],
         )
 
 
@@ -80,25 +99,29 @@ class FieldManager():
 
         for f_code in forms.raw:
             f = self.get_feature(f_code)
+            target = False
             if f is None:
                 f = self.get_target(f_code)
+                target = True
 
             if f:
                 f.field_type = forms.raw[f_code]["type"]
-                # todo: "CHECK_BOX", "MULTI_SELECT"
-                if f.field_type in ["RADIO_BUTTON", "DROP_DOWN"]:
+                if f.field_type in ["RADIO_BUTTON", "DROP_DOWN", "CHECK_BOX", "MULTI_SELECT"]:
                     options = forms.raw[f_code]["options"]
                     f.value_converter = {}
                     for o_k in options:
                         f.value_converter[o_k] = options[o_k]["index"]
+                    if not target and f.field_type in ["CHECK_BOX", "MULTI_SELECT"]:
+                        f.category_feature = True  # check_box and multi_select have to be category feature
 
         return self
 
     def adjust(self, dataset):
-        data = np.zeros(dataset.data.shape)
+        data = None
         target = np.zeros(dataset.target.shape)
+        length = dataset.target.shape[0]
 
-        for i in list(range(dataset.data.shape[1])) + [-1]:
+        for i in list(range(dataset.data.shape[1])) + [-1]:  # -1 is for target
             if i > -1:
                 f = self.features[i]
                 c = dataset.data[:, i]
@@ -106,15 +129,19 @@ class FieldManager():
                 f = self.target
                 c = dataset.target
 
-            converted = np.array(list(map(f.__call__, c)))
-            f.value_mean = np.mean(converted)
-            f.value_std = np.std(converted)
-            normalized = (converted - f.value_mean) / f.value_std
+            converted = np.array(list(map(f.__call__, c))).reshape(length, -1)
+            if not f.category_feature:
+                f.value_mean = np.mean(converted)
+                f.value_std = np.std(converted)
+                converted = (converted - f.value_mean) / f.value_std
 
             if i > -1:
-                data[:, i] = normalized
+                if data is None:
+                    data = converted
+                else:
+                    data = np.hstack((data, converted))
             else:
-                target = normalized
+                target = converted
 
         dataset = DataSet(data, target, dataset.feature_names, dataset.target_name)
 
@@ -134,7 +161,8 @@ class FieldManager():
 
     @classmethod
     def load(cls, serialized):
-        app_id = serialized["app_id"]
-        features = [Field.load(f) for f in serialized["features"]]
-        target = Field.load(serialized["target"])
+        _s = serialized if isinstance(serialized, dict) else json.loads(serialized)
+        app_id = _s["app_id"]
+        features = [Field.load(f) for f in _s["features"]]
+        target = Field.load(_s["target"])
         return FieldManager(app_id, features, target)
