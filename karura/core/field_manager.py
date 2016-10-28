@@ -25,8 +25,8 @@ class Field():
         else:
             return self._to_feature(value)
 
-    def categorizable(self):
-        return True if len(self.value_converter) > 0 else False
+    def is_categorizable(self):
+        return True if isinstance(self.value_converter, dict) else False
     
     def _to_feature(self, value):
         v = value
@@ -66,10 +66,11 @@ class Field():
 
 class FieldManager():
 
-    def __init__(self, app_id, features=(), target=None):
+    def __init__(self, app_id, features=(), target=None, selected=()):
         self.app_id = app_id
         self.features = features if len(features) > 0 else []
         self.target = target
+        self.selected = selected if len(selected) > 0 else []
 
     @classmethod
     def read_definitions(cls, ml_definitions):
@@ -120,6 +121,7 @@ class FieldManager():
         data = None
         target = np.zeros(dataset.target.shape)
         length = dataset.target.shape[0]
+        feature_names = []
 
         for i in list(range(dataset.data.shape[1])) + [-1]:  # -1 is for target
             if i > -1:
@@ -135,15 +137,28 @@ class FieldManager():
                 f.value_std = np.std(converted)
                 converted = (converted - f.value_mean) / f.value_std
 
+            column_count = converted.shape[1]
+
             if i > -1:
-                if data is None:
-                    data = converted
+                names = []
+                if column_count == 1:
+                    names = [dataset.feature_names[i]]
                 else:
-                    data = np.hstack((data, converted))
+                    for n in range(column_count):
+                        names.append("{}_{}".format(dataset.feature_names[i], n))
+                
+                for i, n in enumerate(names):
+                    if len(self.selected) == 0 or n in self.selected:
+                        feature_names.append(n)
+                        column = converted[:, i].reshape(-1, 1)
+                        if data is None:
+                            data = column
+                        else:
+                            data = np.hstack((data, column))
             else:
                 target = converted
 
-        dataset = DataSet(data, target, dataset.feature_names, dataset.target_name)
+        dataset = DataSet(data, target, feature_names, dataset.target_name)
 
         return dataset
 
@@ -154,7 +169,8 @@ class FieldManager():
         data_analyzer = {
             "app_id": self.app_id,
             "features": [f.to_dict() for f in self.features],
-            "target": self.target.to_dict()
+            "target": self.target.to_dict(),
+            "selected": self.selected
         }
 
         return data_analyzer
@@ -165,4 +181,5 @@ class FieldManager():
         app_id = _s["app_id"]
         features = [Field.load(f) for f in _s["features"]]
         target = Field.load(_s["target"])
-        return FieldManager(app_id, features, target)
+        selected = _s["selected"]
+        return FieldManager(app_id, features, target, selected)

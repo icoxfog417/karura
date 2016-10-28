@@ -36,6 +36,12 @@ class TestFieldManager(unittest.TestCase):
         manager.get_feature("direction").category_feature = True
         adjusted = manager.adjust(dataset)
         self.assertTrue(dataset.data.shape[1] < adjusted.data.shape[1])
+        self.assertEqual(adjusted.data.shape[1], len(adjusted.feature_names))
+
+        # select feature
+        manager.selected = ["walk_time", "area", "direction_0", "direction_4"]
+        adjusted = manager.adjust(dataset)
+        self.assertEqual(adjusted.data.shape[1], 4)
 
         # restore from serialized
         serialized = json.dumps(manager.to_dict())

@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import os
 import json
 from sklearn.externals import joblib
 from karura.core.field_manager import FieldManager
+import karura.core.evaluation as keval
 
 
 class ModelManager():
@@ -14,9 +16,27 @@ class ModelManager():
         self.model = trained_model
 
     def build(self, dataset):
-        # create the model here
+        # validate data volume
+        evaluation = keval.DatasetEvaluation.judge(dataset)
+        if evaluation:
+            return evaluation
+        
+        feature_evaluation = keval.FeatureEvaluation.judge(dataset, self.field_manager)
+        adjusted = self.field_manager.adjust(dataset)
 
-        self.model = "created model"
+        # make model
+        model = self.make_model(adjusted)
+
+        # train the model
+        model_evaluation = keval.ModelEvaluation.judge(model, adjusted)
+
+        # save the model
+
+        return evaluation
+    
+    @classmethod
+    def make_model(cls, dataset):
+        pass
 
     def predict(self, code_value_dict):
         formatted = self.field_manager.format(code_value_dict)
