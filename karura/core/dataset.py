@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 import pykintone
 import numpy as np
+from karura.core.evaluation import Aspect, Message
 
 
 class DataSet():
@@ -41,7 +43,23 @@ class DataSet():
                 target.append(t)
 
             dataset = DataSet(np.array(data), np.array(target), _feature_names, _target_name)
+            if dataset.data[0] != len(dataset.target):
+                raise Exception("Size mismatch occurrs at data and target")
+
             return dataset
 
         else:
             raise Exception("error has occured when loading the data {}.".format(result.error))
+
+    def evaluate(self):
+        evaluations = []
+        if self.data.shape[0] < 50:
+            evaluations.append(
+                Message.problem(Aspect.dataset, "データ量が少なすぎます。最低でも50件以上はデータがあったほうが良いです。")
+            )
+        if self.data.shape[0] < self.data.shape[1]:
+            evaluations.append(
+                Message.problem(Aspect.dataset, "予測に使う項目数に対して、データ量が少なすぎます。予測項目を少なくするか、もっとデータを用意しましょう。")
+            )
+
+        return evaluations

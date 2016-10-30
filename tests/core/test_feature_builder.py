@@ -2,16 +2,17 @@ import unittest
 import numpy as np
 from sklearn import datasets
 from karura.core.dataset import DataSet
-from karura.core.evaluation import FeatureEvaluation
+from karura.core.feature_builder import FeatureBuilder
 from karura.core.field_manager import Field, FieldManager
 
 
-class TestFeatureEvaluation(unittest.TestCase):
+class TestFeatureBuilder(unittest.TestCase):
 
     def test_feature_extraction(self):
         dataset, field_manager = self.make_dataset_and_field_manager()
-        scenario, candidates = FeatureEvaluation.extract_candidates(dataset, field_manager)
-        self.assertTrue(len(candidates) < len(dataset.feature_names))
+        f_builder = FeatureBuilder(field_manager)
+        f_builder.build(dataset)
+        self.assertTrue(len(f_builder._best_features) < len(dataset.feature_names))
 
     def make_dataset_and_field_manager(self):
         iris = datasets.load_iris()

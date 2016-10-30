@@ -2,41 +2,22 @@
 import os
 import json
 from sklearn.externals import joblib
+from karura.core.dataset import DataSet
 from karura.core.field_manager import FieldManager
-import karura.core.evaluation as keval
+from karura.core.feature_builder import FeatureBuilder
+from karura.core.evaluation import Evaluation
 
 
 class ModelManager():
     ROOT = os.path.join(os.path.dirname(__file__), "../../store")
     FIELD_MANAGER_FILE = "field_manager.json"
+    MODEL_INFO_FILE = "model_info.json"
     MODEL_FILE = "model.pkl"
 
-    def __init__(self, field_manager, trained_model=None):
+    def __init__(self, field_manager=None, trained_model=None):
         self.field_manager = field_manager
         self.model = trained_model
-
-    def build(self, dataset):
-        # validate data volume
-        evaluation = keval.DatasetEvaluation.judge(dataset)
-        if evaluation:
-            return evaluation
-        
-        feature_evaluation = keval.FeatureEvaluation.judge(dataset, self.field_manager)
-        adjusted = self.field_manager.adjust(dataset)
-
-        # make model
-        model = self.make_model(adjusted)
-
-        # train the model
-        model_evaluation = keval.ModelEvaluation.judge(model, adjusted)
-
-        # save the model
-
-        return evaluation
-    
-    @classmethod
-    def make_model(cls, dataset):
-        pass
+        self._messages = []
 
     def predict(self, code_value_dict):
         formatted = self.field_manager.format(code_value_dict)

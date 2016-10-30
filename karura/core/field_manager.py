@@ -6,9 +6,10 @@ from karura.core.dataset import DataSet
 
 class Field():
 
-    def __init__(self, field_code, field_type="", value_converter=0.0, value_mean=0, value_std=1, category_feature=False):
+    def __init__(self, field_code, field_type="", label="", value_converter=0.0, value_mean=0, value_std=1, category_feature=False):
         self.field_code = field_code
         self.field_type = field_type
+        self.label = label
         self.value_converter = value_converter
         self.value_mean = value_mean
         self.value_std = value_std
@@ -45,6 +46,7 @@ class Field():
         return {
             "field_code": self.field_code,
             "field_type": self.field_type,
+            "label": self.label,
             "value_converter": self.value_converter,
             "value_mean": self.value_mean,
             "value_std": self.value_std,
@@ -57,6 +59,7 @@ class Field():
         return Field(
             _s["field_code"],
             _s["field_type"],
+            _s["label"],
             _s["value_converter"],
             _s["value_mean"],
             _s["value_std"],
@@ -106,7 +109,9 @@ class FieldManager():
                 target = True
 
             if f:
+                # todo: have to think about single/multiline text
                 f.field_type = forms.raw[f_code]["type"]
+                f.label = forms.raw[f_code]["label"]
                 if f.field_type in ["RADIO_BUTTON", "DROP_DOWN", "CHECK_BOX", "MULTI_SELECT"]:
                     options = forms.raw[f_code]["options"]
                     f.value_converter = {}
@@ -146,7 +151,7 @@ class FieldManager():
                 else:
                     for n in range(column_count):
                         names.append("{}_{}".format(dataset.feature_names[i], n))
-                
+
                 for i, n in enumerate(names):
                     if len(self.selected) == 0 or n in self.selected:
                         feature_names.append(n)
@@ -156,7 +161,7 @@ class FieldManager():
                         else:
                             data = np.hstack((data, column))
             else:
-                target = converted
+                target = converted.flatten()
 
         dataset = DataSet(data, target, feature_names, dataset.target_name)
 
