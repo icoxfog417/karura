@@ -1,75 +1,72 @@
 # -*- coding: utf-8 -*-
-from sklearn.svm import SVC
+from sklearn.svm import SVC, SVR
 from sklearn import linear_model
-from karura.core.dataset import DataSet
-from karura.core.field_manager import FieldManager
-from karura.core.feature_builder import FeatureBuilder
+from sklearn.model_selection import GridSearchCV
 from karura.core.evaluation import Message, Aspect, Evaluation
 
 
 class ModelBuilder():
 
-    def __init__(self, env):
-        self.env = env
+    def __init__(self, field_manager):
+        self.field_manager = field_manager
+        self.model = None
+        self.model_score = 0
         self._messages = []
 
-    def _check_problem(self, interrupt=True):
-        problems = [m for m in self._messages if m.evaluation == Evaluation.problem]
-        if len(problems) > 0:
-            if interrupt:
-                raise Exception("Problem has occured. please see the detail in the _messages.")
-            else:
-                return True
-        else:
-            return False
+    def build(self, dataset):
+        evaluators = []
+        cv = 5  # todo: have to adjust to dataset size
 
-    def _merge_message(self, messages):
-        for m in messages:
-            self._messages.append(m)
-
-    def _merge_and_check_messages(self, messages, interrupt=True):
-        self._merge_message(messages)
-        self._check_problem(interrupt)
-
-    def build(self, ml_definitions):
-        self._messages.clear()
-
-        # read received definitions and configure these
-        field_manager = FieldManager.read_definitions(ml_definitions)
-        field_manager.init(self.env)
-
-        # load dataset and evaluate
-        dataset = DataSet.load_dataset(self.env, field_manager=field_manager)
-        self._merge_and_check_messages(dataset.evaluate())
-
-        # build the feature from field and dataset
-        f_builder = FeatureBuilder(field_manager)
-        f_builder.build(dataset)
-        self._merge_and_check_messages(f_builder.evaluate())
-
-        # adjust the dataset to the feature
-        adjusted = f_builder.field_manager.adjust(dataset)
-
-        # make & train the model
-        model = self.make_model(adjusted)
-
-
-    def make_model(self, dataset):
-        model = None
-        if dataset.target.is_categorizable():
-            candidates = [
-                SVC(kernel="linear", C=0.025),
-                SVC(gamma=2, C=1),
+        if self.field_manager.target.is_categorizable():
+            parameter_candidates = [
+                {"kernel": ["linear"], "C": [1, 10, 100]},
+                {"kernel": ["rbf"], "gamma": [1e-1, 1e-2, 1e-3, 1e-4], "C": [1, 10, 100]}
             ]
+            # todo: have to think about scoring parameter (default is accuracy, so f1 related score may be appropriate)
+            evaluator = GridSearchCV(
+                SVC(C=1),
+                parameter_candidates,
+                cv=cv
+            )
+            evaluators.append(evaluator)
         else:
-            candidates = [
-                linear_model.LinearRegression(),
-                linear_model.ElasticNet()
+
+            evaluator1 = GridSearchCV(
+                linear_model.ElasticNet(),
+                {"alpha": [0.1, 0.5, 0.7, 1], "l1_ratio": [(r + 1) / 10 for r in range(10)]},
+                cv=cv
+            )
+
+            parameter_candidates = [
+                {"kernel": ["rbf"], "gamma": [1e-3, 1e-4], "C": [1, 10, 100]}
             ]
 
+            # todo: have to think about scoring parameter (default is accuracy, so f1 related score may be appropriate)
+            evaluator2 = GridSearchCV(
+                SVR(C=1),
+                parameter_candidates,
+                cv=cv
+            )
+            evaluators.append(evaluator1)
+            evaluators.append(evaluator2)
 
-
-        pass
+        self.model_score = 0
+        self.model = None
+        for e in evaluators:
+            e.fit(dataset.data, dataset.target)
+            if e.best_score_ > self.model_score:
+                self.model_score = e.best_score_
+                self.model = e.best_estimator_
 
     def evaluate(self):
-        pass
+        evaluations = []
+        if self.model_score < 0.7:
+            evaluations.append(
+                Message(Aspect.model, "モデルの精度が7割以下({})と、あまりよくありません。予測に使う項目を見直すか、もっとデータが必要です。".format(self.model_score))
+            )
+        elif self.model_score >= 0.8:
+            evaluations.append(
+                Message.praise(Aspect.model, "モデルの精度は良い感じです！({})。十分に予測に使えるでしょう。".format(self.model_score))
+            )
+
+        return evaluations

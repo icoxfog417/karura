@@ -13,6 +13,20 @@ class TestField(unittest.TestCase):
         self.assertEqual(3, len(v))  # data is like (A, B, C) = (0, 1, 0)
         self.assertEqual(1, v[1])
 
+    def test_feature_restore(self):
+        category_field = Field("category", "RADIO_BUTTON", value_converter={"A": 1, "B":2, "C":3}, category_feature=True)
+        number_field = Field("number", "NUMBER", value_mean=4, value_std=2)
+
+        category_value = category_field("B")
+        self.assertEqual("B", category_field.restore(category_value))
+
+        category_field.category_feature = False
+        category_value = category_field("B")
+        self.assertEqual("B", category_field.restore(category_value))
+
+        number_value = number_field(10)
+        self.assertEqual(10, number_field.restore(number_value))
+
     def test_serialize(self):
         field = Field("test_field", "SINGLE_TEXT", {"XX": 1}, 1, 2, True)
         d = field.to_dict()

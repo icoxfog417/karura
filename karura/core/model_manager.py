@@ -5,6 +5,7 @@ from sklearn.externals import joblib
 from karura.core.dataset import DataSet
 from karura.core.field_manager import FieldManager
 from karura.core.feature_builder import FeatureBuilder
+from karura.core.model_builder import ModelBuilder
 from karura.core.evaluation import Evaluation
 
 
@@ -18,6 +19,48 @@ class ModelManager():
         self.field_manager = field_manager
         self.model = trained_model
         self._messages = []
+
+    def _check_problem(self, interrupt=True):
+        problems = [m for m in self._messages if m.evaluation == Evaluation.problem]
+        if len(problems) > 0:
+            if interrupt:
+                raise Exception("Problem has occured. please see the detail in the _messages.")
+            else:
+                return True
+        else:
+            return False
+
+    def _merge_message(self, messages):
+        for m in messages:
+            self._messages.append(m)
+
+    def _merge_and_check_messages(self, messages, interrupt=True):
+        self._merge_message(messages)
+        self._check_problem(interrupt)
+
+    def build(self, environment, ml_definitions):
+        self._messages.clear()
+
+        # read received definitions and configure these
+        field_manager = FieldManager.read_definitions(ml_definitions)
+        field_manager.init(environment)
+
+        # load dataset and evaluate
+        dataset = DataSet.load_dataset(environment, field_manager=field_manager)
+        self._merge_and_check_messages(dataset.evaluate())
+
+        # build the feature from field and dataset
+        f_builder = FeatureBuilder(field_manager)
+        f_builder.build(dataset)
+        self._merge_and_check_messages(f_builder.evaluate())
+
+        # adjust the dataset to the feature
+        adjusted = f_builder.field_manager.adjust(dataset)
+
+        # make & train the model
+        m_builder = ModelBuilder(f_builder.field_manager)
+        m_builder.build(adjusted)
+        self._merge_and_check_messages(m_builder.evaluate())
 
     def predict(self, code_value_dict):
         formatted = self.field_manager.format(code_value_dict)

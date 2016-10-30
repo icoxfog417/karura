@@ -26,6 +26,20 @@ class Field():
         else:
             return self._to_feature(value)
 
+    def restore(self, feature_value):
+        _f_value = feature_value
+        if self.category_feature:
+            index = np.argmax(feature_value)
+            _f_value = sorted(list(self.value_converter.values()))[index]  # caution: index have to be ordered by value
+
+        if self.is_categorizable():
+            key = [vc[0] for vc in self.value_converter.items() if vc[1] == _f_value]
+            value = "" if len(key) == 0 else key[0]
+            return value
+        else:
+            value = _f_value * self.value_std + self.value_mean
+            return value
+
     def is_categorizable(self):
         return True if isinstance(self.value_converter, dict) else False
     
