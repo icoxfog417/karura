@@ -38,7 +38,7 @@ class FeatureBuilder(object):
             candidates = {}
             for i, selected in enumerate(selector.get_support()):
                 if selected and selector.scores_[i] > threshold:
-                    candidates[dataset.feature_names[i]] = selector.scores_[i]
+                    candidates[adjusted.feature_names[i]] = selector.scores_[i]
             
             if sum(selector.scores_) > top_score:
                 self._best_scenario = s

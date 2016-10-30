@@ -43,7 +43,7 @@ class DataSet():
                 target.append(t)
 
             dataset = DataSet(np.array(data), np.array(target), _feature_names, _target_name)
-            if dataset.data[0] != len(dataset.target):
+            if dataset.data.shape[0] != len(dataset.target):
                 raise Exception("Size mismatch occurrs at data and target")
 
             return dataset

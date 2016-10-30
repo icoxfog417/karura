@@ -12,7 +12,6 @@ from karura.core.evaluation import Evaluation
 class ModelManager():
     ROOT = os.path.join(os.path.dirname(__file__), "../../store")
     FIELD_MANAGER_FILE = "field_manager.json"
-    MODEL_INFO_FILE = "model_info.json"
     MODEL_FILE = "model.pkl"
 
     def __init__(self, field_manager=None, trained_model=None):
@@ -62,10 +61,17 @@ class ModelManager():
         m_builder.build(adjusted)
         self._merge_and_check_messages(m_builder.evaluate())
 
+        self.field_manager = f_builder.field_manager
+        self.model = m_builder.model
+
+    def get_evaluation(self):
+        return "score and message to kintone"
+
     def predict(self, code_value_dict):
         formatted = self.field_manager.format(code_value_dict)
         predicted = self.model.predict(formatted)
-        return predicted
+        p = self.field_manager.target.restore(predicted[0])
+        return p
 
     @classmethod
     def __model_name(cls, app_id):
@@ -86,14 +92,14 @@ class ModelManager():
             serialized = json.load(md)
             field_manager = FieldManager.load(serialized)
         
-        trained_model = joblib.load(cls.MODEL_FILE)
-                    
+        trained_model = joblib.load(os.path.join(home_dir, cls.MODEL_FILE))
+
         model_manager = ModelManager(field_manager, trained_model)
 
         return model_manager
 
     def save(self):
-        home_dir = cls.__home_dir(self.field_manager.app_id)
+        home_dir = self.__home_dir(self.field_manager.app_id)
         if not os.path.isdir(home_dir):
             os.mkdir(home_dir)
 
@@ -103,4 +109,4 @@ class ModelManager():
             json.dump(serialized, fm, indent=2)
 
         if self.model:
-            joblib.dump(self.model, self.MODEL_FILE) 
+            joblib.dump(self.model, os.path.join(home_dir, self.MODEL_FILE))

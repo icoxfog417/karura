@@ -24,8 +24,9 @@ class Message():
     @classmethod
     def praise(cls, aspect, message):
         m = cls(aspect, message, Evaluation.praise)
+        return m
 
     @classmethod
     def problem(cls, aspect, message):
         m = cls(aspect, message, Evaluation.problem)
-
+        return m

@@ -16,15 +16,10 @@ class Field():
         self.category_feature = category_feature
 
     def __call__(self, value):
-        if self.category_feature:
-            values = value if isinstance(value, (tuple, list)) else [value]
-            categories = sorted(self.value_converter, key=self.value_converter.get)
-            categorized = [0] * len(categories)
-            for i, c in enumerate(categories):
-                categorized[i] = 1 if c in values else 0
-            return categorized
-        else:
-            return self._to_feature(value)
+        v = self.convert(value)
+        if not self.category_feature:
+            v = (v - self.value_mean) / self.value_std
+        return v
 
     def restore(self, feature_value):
         _f_value = feature_value
@@ -43,9 +38,16 @@ class Field():
     def is_categorizable(self):
         return True if isinstance(self.value_converter, dict) else False
     
-    def _to_feature(self, value):
+    def convert(self, value):
         v = value
-        if isinstance(self.value_converter, dict):
+        if self.category_feature:
+            values = value if isinstance(value, (tuple, list)) else [value]
+            categories = sorted(self.value_converter, key=self.value_converter.get)
+            categorized = [0] * len(categories)
+            for i, c in enumerate(categories):
+                categorized[i] = 1 if c in values else 0
+            v = categorized
+        elif isinstance(self.value_converter, dict):
             if value in self.value_converter:
                 v = int(self.value_converter[value])
         elif str(self.value_converter).isdigit():
@@ -53,7 +55,6 @@ class Field():
         elif str(self.value_converter).replace(".", "").isdigit():
             v = float(value)
 
-        v = (v - self.value_mean) / self.value_std
         return v
 
     def to_dict(self):
@@ -142,15 +143,16 @@ class FieldManager():
         length = dataset.target.shape[0]
         feature_names = []
 
-        for i in list(range(dataset.data.shape[1])) + [-1]:  # -1 is for target
+        for i in list(range(len(self.features))) + [-1]:  # -1 is for target
             if i > -1:
                 f = self.features[i]
-                c = dataset.data[:, i]
+                index_in_dataset = dataset.feature_names.index(f.field_code)
+                c = dataset.data[:, index_in_dataset]
             else:
                 f = self.target
                 c = dataset.target
 
-            converted = np.array(list(map(f.__call__, c))).reshape(length, -1)
+            converted = np.array(list(map(f.convert, c))).reshape(length, -1)
             if not f.category_feature:
                 f.value_mean = np.mean(converted)
                 f.value_std = np.std(converted)
@@ -161,10 +163,10 @@ class FieldManager():
             if i > -1:
                 names = []
                 if column_count == 1:
-                    names = [dataset.feature_names[i]]
+                    names = [f.field_code]
                 else:
                     for n in range(column_count):
-                        names.append("{}_{}".format(dataset.feature_names[i], n))
+                        names.append("{}_{}".format(f.field_code, n))
 
                 for i, n in enumerate(names):
                     if len(self.selected) == 0 or n in self.selected:
@@ -182,7 +184,26 @@ class FieldManager():
         return dataset
 
     def format(self, code_value_dict):
-        pass
+        array = []
+        for f in self.features:
+            if f.field_code not in code_value_dict:
+                raise Exception("Since {} is missing, can not format the data")
+
+            v = code_value_dict[f.field_code]
+            f_value = f(v)
+            fname_value_list = []
+
+            if isinstance(f_value, (tuple, list)):
+                for i, fv in enumerate(f_value):
+                    fname_value_list.append(("{}_{}".format(f.field_code, i), fv))
+            else:
+                fname_value_list = [(f.field_code, f_value)]
+
+            for fname, value in fname_value_list:
+                if len(self.selected) == 0 or fname in self.selected:
+                    array.append(value)
+
+        return np.array(array).reshape(1, -1)
 
     def to_dict(self):
         data_analyzer = {
