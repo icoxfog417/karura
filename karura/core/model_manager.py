@@ -17,6 +17,7 @@ class ModelManager():
     def __init__(self, field_manager=None, trained_model=None):
         self.field_manager = field_manager
         self.model = trained_model
+        self.model_score = 0
         self._messages = []
 
     def _check_problem(self, interrupt=True):
@@ -63,9 +64,25 @@ class ModelManager():
 
         self.field_manager = f_builder.field_manager
         self.model = m_builder.model
+        self.model_score = m_builder.model_score
 
     def get_evaluation(self):
-        return "score and message to kintone"
+        messages = {}
+        for m in self._messages:
+            key = str(m.aspect)
+            if key not in messages:
+                messages[key] = []
+            messages[key].append({
+                "evaluation": m.evaluation.value,
+                "message": m.message
+            })
+        
+        result = {
+            "score": self.model_score,
+            "messages": messages
+        }        
+
+        return result
 
     def predict(self, code_value_dict):
         formatted = self.field_manager.format(code_value_dict)

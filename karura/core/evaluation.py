@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from enum import Enum
 
 
@@ -7,11 +8,21 @@ class Aspect(Enum):
     model = 2
     system = 3
 
+    def __str__(self):
+        if self.value == Aspect.dataset.value:
+            return "データについて"
+        elif self.value == Aspect.feature.value:
+            return "予測に使用する項目について"
+        elif self.value == Aspect.model.value:
+            return "モデルについて"
+        elif self.value == Aspect.system.value:
+            return "システムエラー"
+
 
 class Evaluation(Enum):
     message = 0
     praise = 1
-    problem = 2
+    problem = -1
 
 
 class Message():
@@ -30,3 +41,12 @@ class Message():
     def problem(cls, aspect, message):
         m = cls(aspect, message, Evaluation.problem)
         return m
+    
+    def __str__(self):
+        evaluation_label = "-"
+        if self.evaluation == Evaluation.praise:
+            evaluation_label = "o"
+        else:
+            evaluation_label = "x"
+
+        return "{}->({}): {}".format(self.aspect.name, evaluation_label, self.message)
