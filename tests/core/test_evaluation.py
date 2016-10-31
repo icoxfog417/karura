@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 import unittest
+import json
 from karura.core.evaluation import Message, Aspect, Evaluation
 from karura.core.model_manager import ModelManager
 
@@ -22,5 +23,6 @@ class TestEvaluation(unittest.TestCase):
         m_manager.model_score = 0.8
 
         result = m_manager.get_evaluation()
-        print(result)
+        jsoned = json.dumps(result)
+        print(jsoned)
         self.assertEqual(0.8, result["score"])

@@ -1,0 +1,19 @@
+.btn-karura-predict{
+    margin-left: 18px;
+    width: 160px;
+    float: right;
+    margin-right: 370px;
+}
+
+.label-prediction {
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+.label-prediction.type-success{
+    color:seagreen;
+}
+
+.label-prediction.type-error{
+    color: coral;
+}
