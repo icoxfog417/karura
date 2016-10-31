@@ -73,7 +73,7 @@ class ModelManager():
             if key not in messages:
                 messages[key] = []
             messages[key].append({
-                "evaluation": m.evaluation.value,
+                "evaluation": str(m.evaluation),
                 "message": m.message
             })
         

@@ -24,6 +24,14 @@ class Evaluation(Enum):
     praise = 1
     problem = -1
 
+    def __str__(self):
+        if self.value == Evaluation.message:
+            return "-"
+        elif self.value == Evaluation.praise:
+            return "○"
+        elif self.value == Evaluation.problem:
+            return "×"
+
 
 class Message():
 
@@ -43,10 +51,4 @@ class Message():
         return m
     
     def __str__(self):
-        evaluation_label = "-"
-        if self.evaluation == Evaluation.praise:
-            evaluation_label = "o"
-        else:
-            evaluation_label = "x"
-
-        return "{}->({}): {}".format(self.aspect.name, evaluation_label, self.message)
+        return "{}->({}): {}".format(self.aspect.name, str(self.evaluation), self.message)
