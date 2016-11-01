@@ -25,11 +25,11 @@ class Evaluation(Enum):
     problem = -1
 
     def __str__(self):
-        if self.value == Evaluation.message:
+        if self.value == Evaluation.message.value:
             return "-"
-        elif self.value == Evaluation.praise:
+        elif self.value == Evaluation.praise.value:
             return "○"
-        elif self.value == Evaluation.problem:
+        elif self.value == Evaluation.problem.value:
             return "×"
 
 

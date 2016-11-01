@@ -8,7 +8,7 @@
     "use strict";
 
     var _karura = {
-        "KARURA_HOST": "https://f5049006.ngrok.io"
+        "KARURA_HOST": "https://7476c0c5.ngrok.io"
     }
 
     _karura.show_notification = function(message, isError){
@@ -104,8 +104,13 @@
 
         //check
         if(exist_feature && exist_target){
-            Karura.show_notification("学習が完了しました！", false);
             console.log(payload);
+            kintone.proxy(Karura.KARURA_HOST + "/train", "POST", {}, payload).then(function(args){
+                var body = args[0];
+                var result = JSON.parse(body)
+                Karura.show_result(result, record);
+                Karura.show_notification("学習が完了しました！", false);
+            });
         }else{
             Karura.show_notification("少なくとも一つの予測に使用するフィールド、予測するフィールが必要です", true);
         }
@@ -174,12 +179,7 @@
             var record = kintone.app.record.get();
             var app_id = record["record"]["app_id"]["value"];
             if(app_id){
-                kintone.proxy(Karura.KARURA_HOST + "/train", "POST", {}, {"msg": "hogehoge"}).then(function(args){
-                    var body = args[0];
-                    var result = JSON.parse(body)
-                    Karura.show_result(result, record);
-                });
-                //Karura.begin_train(app_id, record);
+                Karura.begin_train(app_id, record);
             }else{
                 Karura.show_notification("アプリ番号がまだ入力されていません", true);
             }

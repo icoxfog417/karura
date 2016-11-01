@@ -62,11 +62,11 @@ class ModelBuilder():
         evaluations = []
         if self.model_score < 0.7:
             evaluations.append(
-                Message(Aspect.model, "モデルの精度が7割以下({})と、あまりよくありません。予測に使う項目を見直すか、もっとデータが必要です。".format(self.model_score))
+                Message(Aspect.model, "モデルの精度が7割以下({0:.3f})と、あまりよくありません。予測に使う項目を見直すか、もっとデータが必要です。".format(self.model_score))
             )
         elif self.model_score >= 0.8:
             evaluations.append(
-                Message.praise(Aspect.model, "モデルの精度は良い感じです！({})。十分に予測に使えるでしょう。".format(self.model_score))
+                Message.praise(Aspect.model, "モデルの精度は良い感じです！({0:.3f})。十分に予測に使えるでしょう。".format(self.model_score))
             )
 
         return evaluations

@@ -78,7 +78,7 @@ class ModelManager():
             })
         
         result = {
-            "score": self.model_score,
+            "score": "{0:.4f}".format(self.model_score),
             "messages": messages
         }        
 

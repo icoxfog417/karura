@@ -8,7 +8,7 @@
     "use strict";
 
     kintone.events.on(["app.record.edit.show", "app.record.create.show"], function(event){
-        var KARURA_HOST = "https://f5049006.ngrok.io";
+        var KARURA_HOST = "https://7476c0c5.ngrok.io";
         var ignores = ["CREATED_TIME", "CREATOR", "RECORD_NUMBER", "SPACER", "STATUS_ASSIGNEE", "MODIFIER", "UPDATED_TIME", "STATUS", "CATEGORY"];
 
         var messageArea = document.createElement("span");
@@ -30,18 +30,22 @@
             var url = KARURA_HOST + "/predict";
             var appId = kintone.app.getId();
             var record = kintone.app.record.get();
-            var body = {}
+            var values = {}
             for(var k in record.record){
                 if(ignores.indexOf(record.record[k].type) > -1){
                     continue;
                 }
-                body[k] = record.record[k].value;
+                values[k] = record.record[k].value;
+            }
+            var body = {
+                "appId": appId,
+                "values": values
             }
             kintone.proxy(url, "POST", {}, body).then(function(args){
                     var body = args[0];
                     var result = JSON.parse(body);
                     if("prediction" in result){
-                        setMessage("OK牧場", false);
+                        setMessage("予測が完了しました！", false);
                         var prediction = result.prediction;
                         for(k in prediction){
                             var field_code = k + "_prediction";
@@ -50,7 +54,7 @@
                             }
                         }
                     }else{
-                        setMessage("some error occured", true);                        
+                        setMessage(result["error"], true);
                     }
                     kintone.app.record.set(record);
                 });
