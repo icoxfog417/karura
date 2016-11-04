@@ -8,7 +8,7 @@
     "use strict";
 
     kintone.events.on(["app.record.edit.show", "app.record.create.show"], function(event){
-        var KARURA_HOST = "https://7476c0c5.ngrok.io";
+        var KARURA_HOST = "https://karura-server.herokuapp.com";
         var ignores = ["CREATED_TIME", "CREATOR", "RECORD_NUMBER", "SPACER", "STATUS_ASSIGNEE", "MODIFIER", "UPDATED_TIME", "STATUS", "CATEGORY"];
 
         var messageArea = document.createElement("span");

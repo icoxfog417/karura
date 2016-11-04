@@ -118,6 +118,7 @@ class ModelManager():
     def save(self):
         home_dir = self.__home_dir(self.field_manager.app_id)
         if not os.path.isdir(home_dir):
+            print("making directory for app {}...".format(self.field_manager.app_id))
             os.mkdir(home_dir)
 
         path_fieldm = os.path.join(home_dir, self.FIELD_MANAGER_FILE)

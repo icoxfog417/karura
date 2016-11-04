@@ -8,7 +8,7 @@
     "use strict";
 
     var _karura = {
-        "KARURA_HOST": "https://7476c0c5.ngrok.io"
+        "KARURA_HOST": "https://karura-server.herokuapp.com"
     }
 
     _karura.show_notification = function(message, isError){

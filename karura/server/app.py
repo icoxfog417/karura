@@ -42,6 +42,7 @@ class TrainingHandler(tornado.web.RequestHandler):
             model_manager = ModelManager()
             model_manager.build(env, body)
             result = model_manager.get_evaluation()
+            model_manager.save()
         except Exception as ex:
             result = ErrorMessage.create(str(ex))
 
