@@ -1,9 +1,10 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: win-64
-nomkl
 conda=4.2.9=py35_0
 conda-env=2.6.0=0
+requesets=2.11.1=py35_0
+nomkl
 numpy=1.11.2=py35_0
 pip=8.1.2=py35_0
 python=3.5.2=0

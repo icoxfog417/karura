@@ -4,10 +4,19 @@
   "repository": "https://github.com/icoxfog417/karura",
   "keywords": ["Python", "tornado", "scikit-learn"],
   "env": {
-    "BUILDPACK_URL": "https://github.com/kennethreitz/conda-buildpack",
+    "BUILDPACK_URL": "https://github.com/icoxfog417/conda-buildpack.git#patched",
     "SECRET_TOKEN": {
       "description": "A secret key for verifying the integrity of signed cookies.",
       "generator": "secret"
+    },
+    "KINTONE_DOMAIN": {
+      "description": "kintone domain"
+    },
+    "KINTONE_ID": {
+      "description": "kintone login id for karura."
+    },
+    "KINTONE_PASSWORD": {
+      "description": "kintone login password for karura."
     }
   }
 }
