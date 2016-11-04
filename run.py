@@ -12,8 +12,9 @@ define("debug", default=False, help="run in debug mode")
 
 def main():
     parse_command_line()
-    app = application()
-    app.listen(options.port)
+    app = application(options.debug)
+    port = int(os.environ.get("PORT", options.port))
+    app.listen(port)
     tornado.ioloop.IOLoop.current().start()
 
 

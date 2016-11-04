@@ -1,0 +1,13 @@
+{
+  "name": "Karura",
+  "description": "Easy machine learning platform on the kintone",
+  "repository": "https://github.com/icoxfog417/karura",
+  "keywords": ["Python", "tornado", "scikit-learn"],
+  "env": {
+    "BUILDPACK_URL": "https://github.com/kennethreitz/conda-buildpack",
+    "SECRET_TOKEN": {
+      "description": "A secret key for verifying the integrity of signed cookies.",
+      "generator": "secret"
+    }
+  }
+}

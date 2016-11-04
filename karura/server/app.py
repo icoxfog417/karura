@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import json
+import os
 import tornado.web
 import tornado.escape
 from karura.environment import Environment
@@ -84,7 +84,7 @@ def application(debug=False):
             (r"/train", TrainingHandler),
             (r"/predict", PredictionHandler)
         ],
-        cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
+        cookie_secret=os.environ.get("SECRET_TOKEN", "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__"),
         debug=debug,
     )
     return app
