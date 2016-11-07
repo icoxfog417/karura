@@ -5,15 +5,15 @@
     margin-right: 370px;
 }
 
-.label-prediction {
+.label-karura {
     margin-left: 20px;
     font-weight: bold;
 }
 
-.label-prediction.type-success{
+.label-karura.type-success{
     color:seagreen;
 }
 
-.label-prediction.type-error{
+.label-karura.type-error{
     color: coral;
 }

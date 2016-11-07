@@ -17,7 +17,7 @@
         el_msg.innerHTML = message;
         el_msg.className = "label-karura";
         if(isError !== undefined){
-            el_msg.className += (isError ? " type-error" : "type-success");
+            el_msg.className += (isError ? " type-error" : " type-success");
         }
         while (el_notification.firstChild) {
             el_notification.removeChild(el_notification.firstChild);
@@ -104,7 +104,7 @@
 
         //check
         if(exist_feature && exist_target){
-            console.log(payload);
+            Karura.show_notification("学習を開始しました．．．");
             kintone.proxy(Karura.KARURA_HOST + "/train", "POST", {}, payload).then(function(args){
                 var body = args[0];
                 var result = JSON.parse(body)

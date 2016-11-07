@@ -12,15 +12,14 @@
 
 .label-karura{
     margin-left: 10px;
+    font-weight: bold;
     font-size: 1.4em;
 }
 
-.label-karura.type-success{
-    font-weight: bold;
+.label-karura.type-success{    
     color:seagreen;
 }
 
 .label-karura.type-error{
-    font-weight: bold;
     color: coral;
 }
