@@ -23,12 +23,16 @@ You have to check your `app id`. You can confirm it in kintone system administra
 
 ## Installation
 
-**for kintone**
+In the [karura-kintone](https://github.com/icoxfog417/karura/tree/master/karura-kintone), there are file for client and master.
 
-* karura plugin
-* karura master app
-* karura server
- * if you want to host your own karura, you can deploy it by below heroku button.
+* `karura-client-plugin.zip`: plugin for karura client app
+* `karura-master-app.zip`: karura master app
+
+That's all you need.
+
+Optional
+
+You can create your own karura server. If you want to do it, you can deploy your own karura by Heroku Button.
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
