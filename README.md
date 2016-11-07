@@ -8,16 +8,21 @@ Easy machine learning platform on the kintone.
 
 Choose app that you want to do "prediction" (it is your client app). Then...
 
-1. Add karura plugin to your client app, and add field to input predicted value.  
+### 1. Add karura plugin to your client app, and add field to input predicted value.
+
 ![step1.PNG](./doc/step1.PNG)  
 (if you have "price" field and you want to predict it, you have to add "price_prediction" field.)
-2. Define prediction target, and items to use for prediction.  
+
+### 2. Define prediction target, and items to use for prediction.
+
 ![step2.PNG](./doc/step2.PNG)  
 You have to check your `app id`. You can confirm it in kintone system administration > app administration.
-3. Train karura  
+
+### 3. Train karura
+
 ![step3.PNG](./doc/step3.PNG)
 
-**Congraturation! You can use prediction in your client app!!**
+### Congraturation! You can use prediction in your client app!!
 
 ![prediction.PNG](./doc/prediction.PNG)
 
