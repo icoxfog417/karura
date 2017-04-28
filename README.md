@@ -1,5 +1,7 @@
 # karura
 
+# [karura is rebuilding at here!](https://github.com/chakki-works/karura)
+
 Easy machine learning platform on the kintone.
 
 ![karura-architecture](./doc/karura_architecture.PNG)
